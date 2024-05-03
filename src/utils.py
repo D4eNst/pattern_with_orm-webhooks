@@ -1,4 +1,5 @@
 import logging
+from repository.events import inspect_db_server_on_connection, inspect_db_server_on_close
 
 from repository.database import async_db
 

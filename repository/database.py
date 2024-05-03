@@ -4,10 +4,10 @@ from redis import asyncio as aioredis
 from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
-    AsyncSession,
     create_async_engine,
+    async_sessionmaker,
 )
-from sqlalchemy.pool import Pool as SQLAlchemyPool
+from sqlalchemy.pool import Pool
 
 from data.config import settings
 
@@ -18,8 +18,8 @@ class AsyncDatabase:
         self.async_engine: AsyncEngine = create_async_engine(
             url=self.set_async_db_uri,
         )
-        self.async_session: AsyncSession = AsyncSession(bind=self.async_engine)
-        self.pool: SQLAlchemyPool = self.async_engine.pool
+        self.async_session = async_sessionmaker(self.async_engine, expire_on_commit=False)
+        self.pool: Pool = self.async_engine.pool
 
     @property
     def set_async_db_uri(self) -> str | pydantic.PostgresDsn:

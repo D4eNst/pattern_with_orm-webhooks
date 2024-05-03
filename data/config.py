@@ -4,15 +4,18 @@ from decouple import config
 from pydantic import BaseConfig
 from pydantic_settings import BaseSettings
 
-ROOT_DIR = Path(__file__).parent.parent.resolve()
+
+def get_base_dir() -> Path:
+    return Path(__file__).parent.parent.resolve()
 
 
 class Settings(BaseSettings):
     """ Main settings. To manage values use .env file """
+    ROOT_DIR: Path = get_base_dir()
 
     class Config(BaseConfig):
         case_sensitive: bool = True
-        env_file: str = f"{str(ROOT_DIR)}/.env"
+        env_file: str = f"{str(get_base_dir())}/.env"
         validate_assignment: bool = True
         extra: str = 'ignore'
 
@@ -42,10 +45,6 @@ class Settings(BaseSettings):
                 f"{self.POSTGRES_HOST}:"
                 f"{self.POSTGRES_PORT}/"
                 f"{self.POSTGRES_DATABASE}")
-
-    @property
-    def postgres_dsn_to_main_db(self) -> str:
-        return self.postgres_dsn.replace(self.POSTGRES_DATABASE, self.POSTGRES_MAIN)
 
 
 settings = Settings()
