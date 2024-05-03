@@ -1,5 +1,5 @@
 import logging
-from aiogram import types, Router, F
+from aiogram import types, Router, F, flags
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
@@ -10,11 +10,11 @@ from .keyboards import kb, ikb
 
 import src.content.states as st
 
-
 router = Router()
 
 
 @router.message(Command("start"))
+@flags.with_session
 async def cmd_start(msg: types.Message, state: FSMContext, session: AsyncSession) -> None:
     current_state = await state.get_state()
     await msg.answer(f"Hi, Im started! Current state is {current_state}")
@@ -23,7 +23,6 @@ async def cmd_start(msg: types.Message, state: FSMContext, session: AsyncSession
     tests = await test_repo.find_all()
     for test_obj in tests:
         await msg.answer(test_obj.text)
-
 
 # States can be set:
 # async def set_state(msg: types.Message, state: FSMContext) -> None:
