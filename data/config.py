@@ -15,9 +15,13 @@ class Settings(BaseSettings):
 
     class Config(BaseConfig):
         case_sensitive: bool = True
-        env_file: str = f"{str(get_base_dir())}/.env"
+        env_file: str = f"{get_base_dir()}/.env"
         validate_assignment: bool = True
-        extra: str = 'ignore'
+        extra: str = "ignore"
+
+    # app settings
+    DOMAIN: str = config("DOMAIN", cast=str)  # type: ignore
+    WEBHOOK_PATH: str = config("WEBHOOK_PATH", cast=str)  # type: ignore
 
     # src settings
     TOKEN: str = config("TOKEN", cast=str)  # type: ignore
@@ -45,6 +49,23 @@ class Settings(BaseSettings):
                 f"{self.POSTGRES_HOST}:"
                 f"{self.POSTGRES_PORT}/"
                 f"{self.POSTGRES_DATABASE}")
+
+    @property
+    def set_app_attributes(self) -> dict[str, str | bool | None]:
+        """
+        Set all `FastAPI` class' attributes with the custom values.
+        """
+        return {
+            "title": "Bot",
+            "version": "0.1.0",
+            # "debug": self.DEBUG,
+            # "description": self.DESCRIPTION,
+            # "docs_url": self.DOCS_URL,
+            # "openapi_url": self.OPENAPI_URL,
+            # "redoc_url": self.REDOC_URL,
+            # "openapi_prefix": self.OPENAPI_PREFIX,
+            # "api_prefix": self.API_PREFIX,
+        }
 
 
 settings = Settings()
