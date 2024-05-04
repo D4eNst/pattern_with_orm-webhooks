@@ -1,4 +1,6 @@
+.env
 docker/.env
 venv
+.venv
 .idea
 __pycache__/
