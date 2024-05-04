@@ -8,7 +8,7 @@ from repository.crud.test_repo import TestRepo
 from repository.models import *
 from .keyboards import kb, ikb
 
-import src.content.states as st
+import content.states as st
 
 router = Router()
 

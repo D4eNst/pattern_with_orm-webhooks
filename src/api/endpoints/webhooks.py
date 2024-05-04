@@ -3,8 +3,8 @@ from typing import Any
 from aiogram import types
 from fastapi import APIRouter, status
 
+from bot import dp, bot
 from data.config import settings
-from src.bot import dp, bot
 
 router = APIRouter(prefix=settings.WEBHOOK_PATH, tags=["webhooks"])
 

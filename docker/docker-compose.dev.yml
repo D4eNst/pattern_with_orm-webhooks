@@ -1,52 +1,52 @@
 version: '3.8'
 
 services:
-  postgres_db:
+  postgres_for_bot:
     restart: always
     image: postgres
-    container_name: postgres_database
+    container_name: postgres_container
     environment:
-     POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8"
     ports:
-     - "5432:5432"
+      - "5432:5432"
     env_file:
-     - .env
+      - .env
     volumes:
-     - postgres:/var/lib/postgresql/data
-     - postgres_config:/etc/postgresql
+      - postgres:/var/lib/postgresql/data
+      - postgres_config:/etc/postgresql
 
-  redis:
+  redis_for_bot:
     restart: always
     image: redis
     container_name: redis_container
     volumes:
-     - redis-data:/data
+      - redis-data:/data
     ports:
-     - "6379:6379"
+      - "6379:6379"
     env_file:
-     - .env
+      - .env
     sysctls:
-     - net.core.somaxconn=1024
+      - net.core.somaxconn=1024
     command:
-     redis-server --requirepass ${REDIS_PASSWORD}
+      redis-server --requirepass ${REDIS_PASSWORD}
 
   bot:
     restart: always
     build:
-     context: ../.
-     dockerfile: docker/bot.Dockerfile
+      context: ../.
+      dockerfile: docker/bot.Dockerfile
     container_name: src
     depends_on:
-     - postgres_db
-     - redis
-    command: uvicorn src.main:app --reload --workers 1 --host 0.0.0.0 --port 8080
+     - postgres_for_bot
+     - redis_for_bot
+    command: uvicorn main:app --reload --host 0.0.0.0 --port 8080
     volumes:
-     - ../.:/app/
+      - ../src/:/app/
     ports:
-     - "8080:8080"
+      - "8080:8080"
     env_file:
-     - .env
-
+      - .env
+# TODO add service ngrock
 volumes:
   postgres:
   postgres_config:

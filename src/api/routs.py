@@ -1,5 +1,5 @@
 from fastapi import APIRouter
-from src.api.endpoints.webhooks import router as webhooks_router
+from api.endpoints.webhooks import router as webhooks_router
 
 router = APIRouter()
 
