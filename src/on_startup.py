@@ -8,7 +8,7 @@ from data.config import settings
 
 async def on_startup() -> None:
     await bot(DeleteWebhook(drop_pending_updates=True))
-    webhook_url = f"{settings.DOMAIN}{settings.WEBHOOK_PATH}"
+    webhook_url = f"https://{settings.DOMAIN}{settings.WEBHOOK_PATH}"
     webhook_info = await bot.get_webhook_info()
     if webhook_info.url != webhook_url:
         await bot.set_webhook(

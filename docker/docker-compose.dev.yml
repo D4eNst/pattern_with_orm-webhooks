@@ -30,6 +30,22 @@ services:
     command:
       redis-server --requirepass ${REDIS_PASSWORD}
 
+  # use ngrok for local test webhook
+  ngrok:
+    image: ngrok/ngrok:latest
+    restart: always
+    network_mode: "host"
+    environment:
+      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
+    command: http 8080 --domain=${DOMAIN}
+#    to use custom config
+#    command: start --all --config /etc/ngrok.yml
+#    volumes:
+#      - ./ngrok/ngrok.yml:/etc/ngrok.yml
+#      - ./ngrok/log/:/var/log/
+    ports:
+      - "4040:4040"
+
   bot:
     restart: always
     build:
@@ -37,8 +53,8 @@ services:
       dockerfile: docker/bot.Dockerfile
     container_name: src
     depends_on:
-     - postgres_for_bot
-     - redis_for_bot
+      - postgres_for_bot
+      - redis_for_bot
     command: uvicorn main:app --reload --host 0.0.0.0 --port 8080
     volumes:
       - ../src/:/app/
@@ -46,7 +62,7 @@ services:
       - "8080:8080"
     env_file:
       - .env
-# TODO add service ngrock
+
 volumes:
   postgres:
   postgres_config:

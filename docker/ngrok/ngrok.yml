@@ -1,0 +1,13 @@
+version: "2"
+
+console_ui: true
+log_level: info
+#log: /var/log/ngrok.log
+web_addr: 0.0.0.0:4040
+tunnels:
+  webhooks:
+    proto: http
+    addr: 8080
+    inspect: false
+    host_header: "localhost"
+    domain: your-domain.ngrok.app
