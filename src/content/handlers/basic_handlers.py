@@ -20,7 +20,7 @@ async def cmd_start(msg: types.Message, state: FSMContext, session: AsyncSession
     await msg.answer(f"Hi, Im started! Current state is {current_state}")
 
     test_repo = TestRepo(session)
-    tests = await test_repo.find_all()
+    tests = await test_repo.all()
     for test_obj in tests:
         await msg.answer(test_obj.text)
 
