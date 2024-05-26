@@ -1,25 +1,19 @@
-import logging
-from aiogram import types, Router, F, flags
+from aiogram import types, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from repository.crud.test_repo import TestRepo
-from repository.models import *
-from .keyboards import kb, ikb
-
-import content.states as st
+from repository.crud.users import UserRepo
 
 router = Router()
 
 
 @router.message(Command("start"))
-@flags.with_session
 async def cmd_start(msg: types.Message, state: FSMContext, session: AsyncSession) -> None:
     current_state = await state.get_state()
     await msg.answer(f"Hi, Im started! Current state is {current_state}")
 
-    test_repo = TestRepo(session)
+    test_repo = UserRepo(session)
     tests = await test_repo.all()
     for test_obj in tests:
         await msg.answer(test_obj.text)

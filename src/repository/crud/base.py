@@ -3,13 +3,12 @@ from typing import TypeVar, Type, Generic, Sequence, Any, Optional, Union, Dict
 from sqlalchemy import insert, select, update, delete
 from sqlalchemy.ext.asyncio import AsyncSession
 
-from repository.exaptions import EntityDoesNotExistError
-
 T = TypeVar("T")
 
 
 class BaseCRUDRepository(Generic[T]):
     model: Type[T] = None
+    ordering_fields: tuple = ("id", )
 
     def __init__(self, async_session: AsyncSession):
         super().__init__()
@@ -43,7 +42,7 @@ class BaseCRUDRepository(Generic[T]):
         """
         Override this method to change the logic, add filters, sorting, ect
         """
-        return select(self.model)
+        return select(self.model).order_by(*self.ordering_fields)
 
     def _stmt_filter(self, *filters, **filter_by):
         """
@@ -53,6 +52,7 @@ class BaseCRUDRepository(Generic[T]):
             select(self.model)
             .filter(*filters)
             .filter_by(**filter_by)
+            .order_by(*self.ordering_fields)
         )
         return filter_stmt
 
@@ -64,6 +64,7 @@ class BaseCRUDRepository(Generic[T]):
             select(self.model)
             .filter(*filters)
             .filter_by(**filter_by)
+            .order_by(*self.ordering_fields)
         )
         return get_stmt
 
@@ -313,11 +314,9 @@ class BaseCRUDRepository(Generic[T]):
             # Get a user instance with name='Alice' and age > 30\n
             user = await db_session.get(User.age > 30, name='Alice')
         """
-        result = await self.get_or_none(*filters, **filter_by)
-
-        if not result:
-            raise EntityDoesNotExistError(model=self.model)
-
+        get_stmt = self._stmt_get(*filters, **filter_by)
+        query = await self.async_session.execute(statement=get_stmt)
+        result = query.scalars().one()
         return result
 
     async def update(self, *filters, commit: bool = True, **kwargs) -> T:

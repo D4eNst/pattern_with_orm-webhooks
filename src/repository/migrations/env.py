@@ -4,10 +4,10 @@ from alembic import context
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
-from repository.base import Base
+from repository.models.base import Base
 from repository.database import async_db
 
-from repository.models.test_model import Test
+from repository.models.test_model import User
 
 config = context.config
 config.set_main_option(name="sqlalchemy.url", value=f"{str(async_db.set_async_db_uri)}?async_fallback=True")
