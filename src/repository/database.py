@@ -1,7 +1,4 @@
 import pydantic
-from aiogram.fsm.storage.redis import RedisStorage
-from redis import asyncio as aioredis
-from redis.asyncio import Redis
 from sqlalchemy.ext.asyncio import (
     AsyncEngine,
     create_async_engine,
@@ -31,6 +28,3 @@ class AsyncDatabase:
 
 
 async_db: AsyncDatabase = AsyncDatabase()
-
-redis_client: Redis = aioredis.from_url(url=settings.redis_url)
-storage = RedisStorage(redis=redis_client)

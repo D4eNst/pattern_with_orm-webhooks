@@ -8,7 +8,6 @@ T = TypeVar("T")
 
 class BaseCRUDRepository(Generic[T]):
     model: Type[T] = None
-    ordering_fields: tuple = ("id", )
 
     def __init__(self, async_session: AsyncSession):
         super().__init__()
@@ -42,7 +41,7 @@ class BaseCRUDRepository(Generic[T]):
         """
         Override this method to change the logic, add filters, sorting, ect
         """
-        return select(self.model).order_by(*self.ordering_fields)
+        return select(self.model)
 
     def _stmt_filter(self, *filters, **filter_by):
         """
@@ -52,7 +51,6 @@ class BaseCRUDRepository(Generic[T]):
             select(self.model)
             .filter(*filters)
             .filter_by(**filter_by)
-            .order_by(*self.ordering_fields)
         )
         return filter_stmt
 
@@ -64,7 +62,6 @@ class BaseCRUDRepository(Generic[T]):
             select(self.model)
             .filter(*filters)
             .filter_by(**filter_by)
-            .order_by(*self.ordering_fields)
         )
         return get_stmt
 

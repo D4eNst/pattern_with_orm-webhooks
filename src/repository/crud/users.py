@@ -1,5 +1,5 @@
 from repository.crud.base import BaseCRUDRepository
-from repository.models.test_model import User
+from repository.models.user import User
 
 
 class UserRepo(BaseCRUDRepository[User]):
