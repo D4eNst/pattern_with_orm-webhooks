@@ -15,7 +15,7 @@ from repository.models.base import Base
 from repository.models import *  # type: ignore
 
 config = context.config
-config.set_main_option(name="sqlalchemy.url", value=f"{str(async_db.set_async_db_uri)}?async_fallback=True")
+config.set_main_option(name="sqlalchemy.url", value=f"{async_db.async_postgres_dsn}?async_fallback=True")
 config.set_main_option('revision_environment', 'true')
 
 if config.config_file_name is not None:

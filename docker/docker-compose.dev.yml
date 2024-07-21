@@ -1,66 +1,73 @@
 name: aiogram-bot
 
 services:
-  postgres_for_bot:
-    restart: always
-    image: postgres:16.2-alpine
-    container_name: postgres_container
-    ports:
-      - "5432:5432"
-    env_file:
-      - ../.env.docker
-    volumes:
-      - postgres:/var/lib/postgresql/data
-      - postgres_config:/etc/postgresql
+    postgres_for_bot:
+        restart: always
+        image: postgres:16.2-alpine
+        container_name: postgres_container
+        ports:
+            - "5432:5432"
+        env_file:
+            - ../src/.env
+        volumes:
+            - postgres:/var/lib/postgresql/data
+            - postgres_config:/etc/postgresql
 
-  redis_for_bot:
-    restart: always
-    image: redis:7.2.4-alpine
-    container_name: redis_container
-    volumes:
-      - redis-data:/data
-    ports:
-      - "6379:6379"
-    env_file:
-      - ../.env.docker
-    sysctls:
-      - net.core.somaxconn=1024
-    command: redis-server --requirepass ${REDIS_PASSWORD}
+    redis_for_bot:
+        restart: always
+        image: redis:7.2.4-alpine
+        container_name: redis_container
+        volumes:
+            - redis-data:/data
+        ports:
+            - "6379:6379"
+        env_file:
+            - ../src/.env
+        sysctls:
+            - net.core.somaxconn=1024
+        command: sh -c 'redis-server --requirepass "$$REDIS_PASSWORD"'
 
-  # use ngrok for local test webhook
-  ngrok:
-    image: ngrok/ngrok:3.9.0-alpine
-    restart: always
-    network_mode: "host"
-    environment:
-      NGROK_AUTHTOKEN: ${NGROK_AUTHTOKEN}
-    command: http 8080 --domain=${DOMAIN}
-#    to use custom config
-#    command: start --all --config /etc/ngrok.yml
-#    volumes:
-#      - ./ngrok/ngrok.yml:/etc/ngrok.yml
-#      - ./ngrok/log/:/var/log/
-    ports:
-      - "4040:4040"
+    # use ngrok for local test webhook
+    ngrok:
+        image: ngrok/ngrok:3.9.0-alpine
+        restart: no
+        network_mode: "host"
+        entrypoint: [ ]
+        command: sh -c 'ngrok http 8080 --domain="$$DOMAIN"'
+        #    to use custom config
+        #    command: start --all --config /etc/ngrok.yml
+        #    volumes:
+        #      - ./ngrok/ngrok.yml:/etc/ngrok.yml
+        #      - ./ngrok/log/:/var/log/
+        ports:
+            - "4040:4040"
+        env_file:
+            - ../src/.env
 
-  bot:
-    restart: always
-    build:
-      context: ../.
-      dockerfile: docker/bot.Dockerfile
-    container_name: src
-    depends_on:
-      - postgres_for_bot
-      - redis_for_bot
-    command: uvicorn main:app --reload --host 0.0.0.0 --port 8080
-    volumes:
-      - ../src/:/app/
-    ports:
-      - "8080:8080"
-    env_file:
-      - ../.env.docker
+    bot:
+        restart: always
+        build:
+            context: ../.
+            dockerfile: docker/bot.Dockerfile
+            target: development_build
+            args:
+                BOT_ENV: development
+                UID: ${UID:-1000}
+                GID: ${GID:-1000}
+        init: true
+        container_name: src
+        depends_on:
+            - postgres_for_bot
+            - redis_for_bot
+        command: uvicorn webhook_main:app --reload --host 0.0.0.0 --port 8080
+        volumes:
+            - ../src/:/code/
+        ports:
+            - "8080:8080"
+        env_file:
+            - ../src/.env
 
 volumes:
-  postgres:
-  postgres_config:
-  redis-data:
+    postgres:
+    postgres_config:
+    redis-data:

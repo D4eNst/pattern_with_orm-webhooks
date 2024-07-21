@@ -1,3 +1,5 @@
+import logging
+
 from aiogram import types, Router
 from aiogram.filters import Command
 from aiogram.fsm.context import FSMContext
@@ -7,6 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from repository.crud.users import UserRepo
 
 router = Router()
+
+logger = logging.getLogger(__name__)
 
 
 @router.message(Command("start"))
@@ -29,6 +33,7 @@ async def cmd_start(message: types.Message, state: FSMContext, session: AsyncSes
     all_users = await user_repo.all()
     ans_users = [u.first_name for u in all_users]
     await message.answer(f"All users in bot:\n{', '.join(ans_users)}")
+    logger.warning(f"Test log message. List users: {ans_users}")
 
 # States can be set:
 # async def set_state(message: types.Message, state: FSMContext) -> None:

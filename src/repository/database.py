@@ -5,26 +5,29 @@ from sqlalchemy.ext.asyncio import (
     async_sessionmaker,
 )
 from sqlalchemy.pool import Pool
+from yarl import URL
 
 from data.config import settings
 
 
 class AsyncDatabase:
     def __init__(self):
-        self.postgres_uri: pydantic.PostgresDsn = settings.postgres_dsn
+        self.__postgres_dsn: pydantic.PostgresDsn = settings.postgres_dsn
         self.async_engine: AsyncEngine = create_async_engine(
-            url=self.set_async_db_uri,
+            url=self.async_postgres_dsn,
         )
         self.async_session = async_sessionmaker(self.async_engine, expire_on_commit=False)
         self.pool: Pool = self.async_engine.pool
 
     @property
-    def set_async_db_uri(self) -> str | pydantic.PostgresDsn:
-        return (
-            self.postgres_uri.replace("postgresql://", "postgresql+asyncpg://")
-            if self.postgres_uri
-            else self.postgres_uri
-        )
+    def async_postgres_dsn(self) -> str:
+        url = URL(self.__postgres_dsn.unicode_string())
+        async_url = url.with_scheme("postgresql+asyncpg")
+        return str(async_url)
+
+    @property
+    def sync_postgres_dsn(self) -> str:
+        return self.__postgres_dsn.unicode_string()
 
 
 async_db: AsyncDatabase = AsyncDatabase()

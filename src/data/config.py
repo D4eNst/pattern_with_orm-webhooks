@@ -1,54 +1,62 @@
 from pathlib import Path
 
-from decouple import config
-from pydantic import BaseConfig
-from pydantic_settings import BaseSettings
+from pydantic import (
+    Field,
+    PostgresDsn,
+    RedisDsn,
+)
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 def get_base_dir() -> Path:
+    print(Path(__file__).parent.parent.resolve())
     return Path(__file__).parent.parent.resolve()
 
 
 class Settings(BaseSettings):
     """ Main settings. To manage values use .env file """
-    ROOT_DIR: Path = get_base_dir()
-
-    class Config(BaseConfig):
-        case_sensitive: bool = True
-        env_file: str = f"{get_base_dir()}/.env"
-        validate_assignment: bool = True
-        extra: str = "ignore"
+    ROOT_DIR: Path = Path(__file__).parent.parent.resolve()
 
     # app settings
-    DOMAIN: str = config("DOMAIN", cast=str)  # type: ignore
-    WEBHOOK_PATH: str = config("WEBHOOK_PATH", cast=str)  # type: ignore
+    DOMAIN: str
+    WEBHOOK_PATH: str
+    DEBUG: bool = False
 
     # src settings
-    TOKEN: str = config("TOKEN", cast=str)  # type: ignore
-    ADMIN_ID: int = config("ADMIN_ID", cast=int)  # type: ignore
+    TOKEN: str
+    ADMIN_ID: int
 
-    REDIS_HOST: str = config("REDIS_HOST", cast=str)  # type: ignore
-    REDIS_PASSWORD: str = config("REDIS_PASSWORD", cast=str)  # type: ignore
-    REDIS_PORT: int = config("REDIS_PORT", cast=int)  # type: ignore
+    # Redis settings
+    REDIS_HOST: str
+    REDIS_PASSWORD: str
+    REDIS_PORT: int
 
-    POSTGRES_HOST: str = config("POSTGRES_HOST", cast=str)  # type: ignore
-    POSTGRES_PORT: int = config("POSTGRES_PORT", cast=int)  # type: ignore
-    POSTGRES_DATABASE: str = config("POSTGRES_DATABASE", cast=str)  # type: ignore
-    POSTGRES_USER: str = config("POSTGRES_USER", cast=str)  # type: ignore
-    POSTGRES_PASSWORD: str = config("POSTGRES_PASSWORD", cast=str)  # type: ignore
-
-    @property
-    def redis_url(self) -> str:
-        return f"redis://:{self.REDIS_PASSWORD}@{self.REDIS_HOST}:{self.REDIS_PORT}"
+    # Postgres settings
+    POSTGRES_HOST: str
+    POSTGRES_PORT: int
+    POSTGRES_DATABASE: str
+    POSTGRES_USER: str
+    POSTGRES_PASSWORD: str
 
     @property
-    def postgres_dsn(self) -> str:
-        return (f"postgresql://"
-                f"{self.POSTGRES_USER}:"
-                f"{self.POSTGRES_PASSWORD}@"
-                f"{self.POSTGRES_HOST}:"
-                f"{self.POSTGRES_PORT}/"
-                f"{self.POSTGRES_DATABASE}")
+    def redis_url(self) -> RedisDsn:
+        return RedisDsn.build(
+            scheme="redis",
+            password=self.REDIS_PASSWORD,
+            host=self.REDIS_HOST,
+            port=self.REDIS_PORT
+        )
+
+    @property
+    def postgres_dsn(self) -> PostgresDsn:
+        return PostgresDsn.build(
+            scheme="postgresql",
+            username=self.POSTGRES_USER,
+            password=self.POSTGRES_PASSWORD,
+            host=self.POSTGRES_HOST,
+            port=self.POSTGRES_PORT,
+            path=self.POSTGRES_DATABASE
+        )
 
     @property
     def set_app_attributes(self) -> dict[str, str | bool | None]:
@@ -66,6 +74,13 @@ class Settings(BaseSettings):
             # "openapi_prefix": self.OPENAPI_PREFIX,
             # "api_prefix": self.API_PREFIX,
         }
+
+    model_config = SettingsConfigDict(
+        case_sensitive=True,
+        validate_assignment=True,
+        extra="ignore",
+        env_file=ROOT_DIR / ".env",
+    )
 
 
 settings = Settings()

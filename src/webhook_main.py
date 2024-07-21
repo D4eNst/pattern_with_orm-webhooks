@@ -1,22 +1,23 @@
-import uvicorn
-import logging
+from logging.config import dictConfig
 
+import uvicorn
 from fastapi import FastAPI
 
-from data.config import settings
 from api.routs import router as api_router
 from bot import dp
 from content.handlers.routs import main_router
-from content.middlewares.middleware import rg_middlewares
+from content.middlewares.middleware import register_middlewares
+from data.config import settings
+from logs import logging_config
 from management import app_start_with, app_stop_with
 
-logging.basicConfig(level=logging.INFO)
+dictConfig(logging_config)
 
 
 def initialize_app() -> FastAPI:
     # register handlers and start/stop functions
     dp.include_router(main_router)
-    rg_middlewares(dp)
+    register_middlewares(dp)
 
     tb_app = FastAPI(**settings.set_app_attributes)
 
